@@ -1,0 +1,20 @@
+{
+  "name": "playwright_parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.4"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "read-excel-file": "^5.7.1",
+    "xlsx": "^0.18.5",
+    "xlsx-style": "^0.8.13"
+  }
+}
