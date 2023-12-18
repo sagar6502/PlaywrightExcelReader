@@ -7,7 +7,7 @@ const fs = require('fs');
 
 const fs1 = require('fs').promises;
 
-test.only('Write xlsb file', async ({ page }) => {
+test('Write xlsb file', async ({ page }) => {
   // Specify the path to the existing XLSB file
   const filePath = 'D:/Playwright_parser/AutoFilter.xlsb';
 
@@ -60,10 +60,10 @@ test.only('Write xlsb file', async ({ page }) => {
   // }
 });
 
-test('Read xlsb file', async ({ page }) => {
+test.only('count xlsb file', async ({ page }) => {
 
   
-  const filePath = 'D:/Playwright_parser/AutoFilter.xlsb';
+  const filePath = 'D:/Playwright_parser/testing1.xlsb';
 
   // Read binary Excel file
   const buffer = fs.readFileSync(filePath);
@@ -73,17 +73,73 @@ test('Read xlsb file', async ({ page }) => {
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
 
-      // Specify row and column indices (1-based)
-    const rowIndex = 2;
-    const colIndex = 4;
+  const range = XLSX.utils.decode_range(worksheet['!ref']);
+  const numRows = range.e.r - range.s.r + 1; // Number of rows
+  const numCols = range.e.c - range.s.c + 1; // Number of columns
 
-    // Convert indices to cell address
-    const cellAddress = XLSX.utils.encode_cell({ r: rowIndex - 1, c: colIndex - 1 });
+  console.log('Number of rows:', numRows);
+  console.log('Number of columns:', numCols);
+     
+});
 
-  // Accessing a cell
-  const cellA1Value = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
+test.only('read column names', async ({ page }) => {
 
-  console.log('Cell '+cellAddress+': ', cellA1Value);
+  
+  const filePath = 'D:/Playwright_parser/testing1.xlsb';
+
+  // Read binary Excel file
+  const buffer = fs.readFileSync(filePath);
+  const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer' });
+
+  // Assume you're reading from the first sheet (index 0)
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+
+  const range = XLSX.utils.decode_range(worksheet['!ref']);
+  const numCols = range.e.c - range.s.c + 1; // Number of columns
+
+  const columnList = [];
+  for(var i=1; i< numCols;i++){
+    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: i - 1 });
+    const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
+
+    //console.log('Cell '+cellAddress+': ', cellValue);
+    columnList.push(cellValue)
+  }
+  // Print the array
+  console.log(columnList);
+});
+
+test.only('read rows value', async ({ page }) => {
+
+  
+    const filePath = 'D:/Playwright_parser/testing1.xlsb';
+  
+    // Read binary Excel file
+    const buffer = fs.readFileSync(filePath);
+    const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer' });
+  
+    // Assume you're reading from the first sheet (index 0)
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+  
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    const numRows = range.e.r - range.s.r + 1; // Number of rows
+
+  
+    const rowData = [];
+    const columnIndex = 2;
+    for(var i=1; i< numRows;i++){
+      const cellAddress = XLSX.utils.encode_cell({ r: i - 1, c: columnIndex - 1 });
+      const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
+  
+      //console.log('Cell '+cellAddress+': ', cellValue);
+      rowData.push(cellValue)
+    }
+
+
+    // Print the array
+    console.log(rowData);
 });
 
 test('Read xlsx sheet', async ({ page }) => {
