@@ -67,7 +67,7 @@ test.only('count xlsb file', async ({ page }) => {
 
   // Read binary Excel file
   const buffer = fs.readFileSync(filePath);
-  const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer' });
+  const workbook = XLSX.read(buffer, { bookVBA: false, type: 'buffer' });
 
   // Assume you're reading from the first sheet (index 0)
   const sheetName = workbook.SheetNames[0];
