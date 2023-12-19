@@ -7,11 +7,11 @@ const fs = require('fs');
 
 const fs1 = require('fs').promises;
 
-test('Write xlsb file', async ({ page }) => {
+test.skip('Write xlsb file', async ({ page }) => {
   // Specify the path to the existing XLSB file
   const filePath = 'D:/Playwright_parser/AutoFilter.xlsb';
 
-  // try {
+   try {
     // Read binary Excel file
     const buffer = await fs1.readFile(filePath);
 
@@ -26,41 +26,44 @@ test('Write xlsb file', async ({ page }) => {
     });
 
     // Assume you're reading from the first sheet (index 1)
-  //   const worksheet = workbook.getWorksheet(1);
+    const worksheet = workbook.getWorksheet(1);
 
-  //   // Check if the worksheet is loaded
-  //   if (!worksheet) {
-  //     throw new Error('Worksheet not found.');
-  //   }
+    // Check if the worksheet is loaded
+    if (!worksheet) {
+      throw new Error('Worksheet not found.');
+    }
 
-  //   // Specify row and column indices (1-based)
-  //   const rowIndex = 2;
-  //   const colIndex = 3;
+    // Specify row and column indices (1-based)
+    const rowIndex = 2;
+    const colIndex = 3;
 
-  //   // Accessing a cell
-  //   const cell = worksheet.getCell(rowIndex, colIndex);
+    // Accessing a cell
+    const cell = worksheet.getCell(rowIndex, colIndex);
     
-  //   if (!cell) {
-  //     throw new Error(`Cell at row ${rowIndex}, column ${colIndex} not found.`);
-  //   }
+    if (!cell) {
+      throw new Error(`Cell at row ${rowIndex}, column ${colIndex} not found.`);
+    }
 
-  //   cell.value = 'TestingUpdate';
+    cell.value = 'TestingUpdate';
 
-  //   // Save the updated workbook to a new file
-  //   const updatedFilePath = 'D:/Playwright_parser/AutoFilter_updated.xlsb';
-  //   await workbook.xlsx.writeFile(updatedFilePath);
+    // Save the updated workbook to a new file
+    const updatedFilePath = 'D:/Playwright_parser/AutoFilter_updated.xlsb';
+    await workbook.xlsx.writeFile(updatedFilePath);
 
-  //   // Replace the original file with the updated one
-  //   await fs1.rename(updatedFilePath, filePath);
+    // Replace the original file with the updated one
+    await fs1.rename(updatedFilePath, filePath);
 
-  //   console.log(`Cell at row ${rowIndex}, column ${colIndex} updated.`);
-  //   console.log('Cell ' + cell.address + ': ', cell.text);
-  // } catch (error) {
-  //   console.error('Error:', error);
-  // }
+    console.log(`Cell at row ${rowIndex}, column ${colIndex} updated.`);
+    console.log('Cell ' + cell.address + ': ', cell.text);
+  } catch (error) {
+    console.error('Error:', error);
+  }
 });
 
-test.only('count xlsb file', async ({ page }) => {
+
+
+
+test('count xlsb file', async ({ page }) => {
 
   
   const filePath = 'D:/Playwright_parser/testing1.xlsb';
@@ -73,6 +76,7 @@ test.only('count xlsb file', async ({ page }) => {
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
 
+  //SS1
   const range = XLSX.utils.decode_range(worksheet['!ref']);
   const numRows = range.e.r - range.s.r + 1; // Number of rows
   const numCols = range.e.c - range.s.c + 1; // Number of columns
@@ -82,7 +86,7 @@ test.only('count xlsb file', async ({ page }) => {
      
 });
 
-test.only('read column names', async ({ page }) => {
+test('read column names', async ({ page }) => {
 
   
   const filePath = 'D:/Playwright_parser/testing1.xlsb';
@@ -110,14 +114,14 @@ test.only('read column names', async ({ page }) => {
   console.log(columnList);
 });
 
-test.only('read rows value', async ({ page }) => {
+test('read dense xlsb values', async ({ page }) => {
 
   
     const filePath = 'D:/Playwright_parser/testing1.xlsb';
   
     // Read binary Excel file
     const buffer = fs.readFileSync(filePath);
-    const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer' });
+    const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer', dense: true });
   
     // Assume you're reading from the first sheet (index 0)
     const sheetName = workbook.SheetNames[0];
@@ -125,21 +129,29 @@ test.only('read rows value', async ({ page }) => {
   
     const range = XLSX.utils.decode_range(worksheet['!ref']);
     const numRows = range.e.r - range.s.r + 1; // Number of rows
-
-  
-    const rowData = [];
-    const columnIndex = 2;
-    for(var i=1; i< numRows;i++){
-      const cellAddress = XLSX.utils.encode_cell({ r: i - 1, c: columnIndex - 1 });
-      const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
-  
-      //console.log('Cell '+cellAddress+': ', cellValue);
-      rowData.push(cellValue)
-    }
-
-
-    // Print the array
-    console.log(rowData);
+      // Iterate through cells in the current row
+      const rowNumber = 300500
+      const colNumber = 12
+      for (let i = 300000; i < rowNumber; i++) {
+        const row = worksheet[i];
+      
+        // Iterate through cells in the current row
+        for (let j = 0; j < colNumber; j++) {
+          const cell = row[j];
+      
+          // Check if the 'v' property exists before accessing it
+          if (cell && cell.v !== undefined) {
+            // Access the 'v' property of the cell
+            const cellValue = cell.v;
+      
+            // Process or use the cell value as needed
+            console.log(`Row ${i + 1}, Column ${j + 1}: Value - ${cellValue}`);
+          } else {
+            // Handle the case where 'v' property is undefined or does not exist
+            console.log(`Row ${i + 1}, Column ${j + 1}: Value - undefined`);
+          }
+        }
+      }
 });
 
 test('Read xlsx sheet', async ({ page }) => {
@@ -182,6 +194,38 @@ test('Write xlsx sheet', async ({ page }) => {
   console.log('Cell B2: after writing', cellValueB2);
 
   //await browser.close();
+});
+
+test('read rows xlsb value', async ({ page }) => {
+
+  
+  const filePath = 'D:/Playwright_parser/testing1.xlsb';
+
+  // Read binary Excel file
+  const buffer = fs.readFileSync(filePath);
+  const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer' });
+
+  // Assume you're reading from the first sheet (index 0)
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+
+  const range = XLSX.utils.decode_range(worksheet['!ref']);
+  const numRows = range.e.r - range.s.r + 1; // Number of rows
+
+
+  const rowData = [];
+  const columnIndex = 2;
+  for(var i=1; i< numRows;i++){
+    const cellAddress = XLSX.utils.encode_cell({ r: i - 1, c: columnIndex - 1 });
+    const cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : undefined;
+
+    //console.log('Cell '+cellAddress+': ', cellValue);
+    rowData.push(cellValue)
+  }
+
+
+  // Print the array
+  console.log(rowData);
 });
 
 
