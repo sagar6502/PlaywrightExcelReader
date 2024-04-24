@@ -1,64 +1,43 @@
 
 const { test, expect } = require('@playwright/test');
 const { chromium } = require('playwright');
-const ExcelJS = require('exceljs');
+import MailSlurp from "mailslurp-client";
+//const ExcelJS = require('exceljs');
 const XLSX = require('xlsx');
 const fs = require('fs');
+const punycode = require('punycode/');
 
 const fs1 = require('fs').promises;
 
-test.skip('Write xlsb file', async ({ page }) => {
-  // Specify the path to the existing XLSB file
-  const filePath = 'D:/Playwright_parser/AutoFilter.xlsb';
+test('Write xlsb file', async ({ page }) => {
+  const filePath = 'D:/Playwright_parser/testing1.xlsb';
 
-   try {
-    // Read binary Excel file
-    const buffer = await fs1.readFile(filePath);
+  // Read binary Excel file
+  const buffer = fs.readFileSync(filePath);
+  const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer', dense: true });
 
-    // Read the existing workbook with VBA support
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
+  // Assume you're writing to the first sheet (index 0)
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
 
-    // Print names of all worksheets in the workbook
-    workbook.eachSheet((worksheet, sheetId) => {
-      console.log("Sheet");
-      console.log(`Sheet ${sheetId}: ${worksheet.name}`);
-    });
+  const rowNumber = 0;
+  const colNumber = 0;
+  const row = worksheet[rowNumber];
 
-    // Assume you're reading from the first sheet (index 1)
-    const worksheet = workbook.getWorksheet(1);
+  let cell = row[colNumber] || {};
+      
+  cell = 'sagarTesting';
 
-    // Check if the worksheet is loaded
-    if (!worksheet) {
-      throw new Error('Worksheet not found.');
-    }
+  worksheet[rowNumber][colNumber] = cell;
 
-    // Specify row and column indices (1-based)
-    const rowIndex = 2;
-    const colIndex = 3;
+  // Write the modified workbook back to the file
+  const updatedBuffer = XLSX.write(workbook, { bookType: 'xlsb', bookSST: true, type: 'buffer' });
 
-    // Accessing a cell
-    const cell = worksheet.getCell(rowIndex, colIndex);
-    
-    if (!cell) {
-      throw new Error(`Cell at row ${rowIndex}, column ${colIndex} not found.`);
-    }
+  // Save the updated workbook to the same file
+  fs.writeFileSync(filePath, updatedBuffer);
 
-    cell.value = 'TestingUpdate';
-
-    // Save the updated workbook to a new file
-    const updatedFilePath = 'D:/Playwright_parser/AutoFilter_updated.xlsb';
-    await workbook.xlsx.writeFile(updatedFilePath);
-
-    // Replace the original file with the updated one
-    await fs1.rename(updatedFilePath, filePath);
-
-    console.log(`Cell at row ${rowIndex}, column ${colIndex} updated.`);
-    console.log('Cell ' + cell.address + ': ', cell.text);
-  } catch (error) {
-    console.error('Error:', error);
-  }
 });
+
 
 
 
@@ -227,6 +206,116 @@ test('read rows xlsb value', async ({ page }) => {
   // Print the array
   console.log(rowData);
 });
+
+test.skip('write dense xlsb values', async ({ page }) => {
+  page.setDefaultTimeout(60000);
+  const filePath = 'D:/Playwright_parser/testing1.xlsb';
+
+  // Read binary Excel file
+  const buffer = fs.readFileSync(filePath);
+  const workbook = XLSX.read(buffer, { bookVBA: true, type: 'buffer', dense: true });
+
+  // Assume you're writing to the first sheet (index 0)
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+
+  const rowNumber = 10;
+  const colNumber = 12;
+
+  // Create a 2D array to represent new values to be written
+  const newData = [];
+
+  // Iterate through rows
+  for (let i = 1; i < rowNumber; i++) {
+    const rowData = [];
+
+    // Iterate through cells in the current row
+    for (let j = 0; j < colNumber; j++) {
+      // Replace this line with the desired value or calculation logic
+      const cellValue = `NewValue_${i}_${j}`;
+      rowData.push(cellValue);
+    }
+
+    newData.push(rowData);
+  }
+
+  // Calculate the range to write to
+  const startCell = { c: 0, r: 1 }; // Starting cell coordinates
+  const endCell = { c: colNumber - 1, r: rowNumber - 1 }; // Ending cell coordinates
+  const range = XLSX.utils.encode_range(startCell, endCell);
+
+  // Add the new data to the worksheet
+  XLSX.utils.sheet_add_aoa(worksheet, newData, { origin: -1 });
+
+  // Write the modified workbook back to a new file or the same file
+  const newBuffer = XLSX.write(workbook, { bookVBA: true, bookType: 'xlsb', type: 'buffer' });
+
+  // Replace the original file with the new data
+  fs.writeFileSync(filePath, newBuffer);
+
+  console.log('Values have been written successfully.');
+});
+
+test('Filter String', async ({ page }) => {  
+    const URL = 'sc_task_list.do?sysparm_query=assignment_group%3De81fbe2adb132410f57064904b96193f%5Eshort_descriptionSTARTSWITHNew%20Hire%20-%20PLM%2FCAD%20Software%20needed%5Eactive%3Dfalse%5Evariables.4755eaf6db603010924cff0968961976BETWEENjavascript%3Ags.beginningOfToday()%40javascript%3Ags.dateGenerate(\'2024-02-15\'%2C\'end\')&sysparm_view=';
+    const result = URL.match("[0-9]{4}([\-/ \.])[0-9]{2}[\-/ \.][0-9]{2}")[0];
+    const sag = 'saggg'
+    if(result === sag){
+      console.log(500)
+    }
+
+    console.log('oldURL :: '+URL)
+      // Get the current date
+    const currentDate = new Date();
+
+    // Add 4 days to the current date
+    const futureDate = new Date(currentDate);
+    futureDate.setDate(currentDate.getDate() + 4);
+
+    // Extract year, month, and day components
+    const year = futureDate.getFullYear();
+    const month = String(futureDate.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1
+    const day = String(futureDate.getDate()).padStart(2, '0');
+
+    // Create the desired pattern [YYYY-MM-DD] for the future date
+    const formattedFutureDate = `${year}-${month}-${day}`;
+    console.log();
+    const newURL = URL.replace(result,formattedFutureDate)
+
+    console.log('newURL :: '+newURL)
+
+
+});
+
+test.only('can login and verify email address with mailslurp', async() => {
+  const browser = await chromium.launch({ headless: false });
+  const page = await browser.newPage();
+
+  // Navigate to Gmail login page
+  await page.goto('https://mail.google.com');
+
+  // Log in
+  await page.fill('input[type="email"]', 'sagarsunar202@gmail.com');
+  await page.click("//span[text()='Next']"); // Click "Next"
+  await page.fill('input[type="password"]', 'sagarsunar');
+  await page.click("//span[text()='Next']"); // Click "Next"
+
+  // Compose and send an email
+  await page.click('div[aria-label="Compose"]');
+  await page.fill('textarea[name="to"]', 'recipient@example.com');
+  await page.fill('input[name="subjectbox"]', 'Subject of the email');
+  await page.fill('div[aria-label="Message Body"]', 'Body of the email');
+  await page.click('div[aria-label="Send (Ctrl-Enter)"]');
+
+  // Wait for the email to be sent (you may need to adjust the selector)
+  await page.waitForSelector('span[aria-label="Message sent."]');
+
+  // Close the browser
+  await browser.close();
+
+});
+
+
 
 
 
