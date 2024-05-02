@@ -44,3 +44,32 @@ var sayHello = function(){
 
 sayHello();
 //var i = 10;
+
+test('Read Single JSON ', async ({ page }) => {
+    console.log("Reading JSON File");
+    const strJSON = JSON.stringify(Sample1);
+    var jsonObject = JSON.parse(strJSON);
+    
+    var dataMap = new Map(Object.entries(jsonObject));
+    var resultMap = new Map();
+
+    for (const key of dataMap.keys())  {
+        let keyV = dataMap.get(key);
+        resultMap.set(key, keyV);
+    }
+    console.log("Map Values stored :: ");
+    for (let [key, value] of resultMap) {
+        console.log(key + " is " + value);
+    }
+    console.log("done!");
+    // console.log(Sample1)
+    // console.log(Sample1.fruit);
+    // console.log(Sample1.size);
+    // console.log(Sample1.color);
+});
+
+test('Read sample2  ', async ({ page }) => {
+    
+    console.log(Sample2);
+    console.log(Sample2.users[1]);
+});
