@@ -1,0 +1,24 @@
+{
+  "name": "playwright_parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test-EmailTesting": "npx playwright test EmailTesting.spec.js --workers=1",
+    "test-JsonReader": "npx playwright test JsonReader.spec.ts   --workers=1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.4"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "mailslurp-client": "^15.17.5",
+    "read-excel-file": "^5.7.1",
+    "xlsx": "^0.18.5",
+    "xlsx-style": "^0.8.13"
+  }
+}
